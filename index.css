@@ -1,0 +1,83 @@
+body {
+    box-shadow: inset 0 0 2px red;
+}
+
+#garden {
+    box-shadow: inset 0 0 5px rgb(125, 225, 125);
+}
+
+.row {
+    box-shadow: inset 0 0 2px red;
+}
+
+.clod {
+    box-shadow: inset 0 0 1px black;
+}
+
+/*
+
+Garden:
+For usability, a clod of earth has a min dimension (e.g. on an iPhone SE I want relatively bigger clods than on a laptop)
+But, to be more usable on bigger screens, it also has to grow.
+Moreover, I try to exploit the screen the game is played in
+So, on a vertical screen I exploit the width and on a horizontal screen I exploit the height.
+Lastly, there is a max number of clods
+So, after a certain size, the garden stops growing.
+
+*/
+
+:root {
+    --max-num-of-rows: 20;
+    --max-clods-per-row: 20;
+    --min-clod-size: 25px;
+    --max-clod-size: 60px;
+    
+    --clod-size: clamp(var(--min-clod-size), calc(90vw / var(--max-clods-per-row)), var(--max-clod-size));
+
+    --row-width: round( down, 
+                        min(90vw, calc(var(--max-clods-per-row) * var(--clod-size))), 
+                        var(--clod-size));
+    --garden-height: round( down, 
+                            min(90vh, calc(var(--max-num-of-rows) * var(--clod-size))), 
+                            var(--clod-size));
+}
+
+body {
+    margin: 0;
+    height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+#garden {
+    display: flex;
+    flex-direction: column;
+    height: var(--garden-height);
+    overflow-y: hidden;
+}
+
+.row {
+    display: flex;
+    width: var(--row-width);
+    min-height: var(--clod-size);
+    overflow-x: hidden;
+}
+
+.clod {
+    width: var(--clod-size);
+    min-width: var(--min-clod-size);
+    aspect-ratio: 1;
+}
+
+@media (max-aspect-ratio: 1) { /* (width / height) <= 1 --> vertical */
+    #garden {
+        border: min(var(--max-clod-size), calc((100vw - var(--row-width)) / 2)) solid green;
+    }
+}
+@media (min-aspect-ratio: 1) { /* horizontal */
+    #garden {
+        border: min(var(--max-clod-size), calc((100vh - var(--garden-height)) / 2)) solid green;
+    }
+}
+
