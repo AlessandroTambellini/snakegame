@@ -81,3 +81,24 @@ body {
     }
 }
 
+/*
+
+Snake
+
+*/
+
+#garden {
+    position: relative;
+}
+
+#snake {
+    background-color: rgb(46, 86, 46);
+    width: var(--clod-size);
+    aspect-ratio: 1;
+    position: absolute;
+    top: 0;
+    left: 0;
+    /* transition-duration: 200ms; */
+    /* transition-property: all; */
+    /* transition-timing-function: linear; */
+}
