@@ -102,3 +102,22 @@ Snake
     /* transition-property: all; */
     /* transition-timing-function: linear; */
 }
+
+/*
+
+gameover display
+
+*/
+
+#gameover-display {
+    position: absolute;
+    z-index: 1;
+}
+
+.display-none {
+    display: none;
+}
+
+.display-block {
+    display: block;
+}
