@@ -91,17 +91,29 @@ Snake
     position: relative;
 }
 
-#snake {
-    background-color: rgb(46, 86, 46);
+.snake-segment {
     width: var(--clod-size);
     aspect-ratio: 1;
+    background-color: rgb(46, 86, 46);
     position: absolute;
-    top: 0;
-    left: 0;
-    /* transition-duration: 200ms; */
-    /* transition-property: all; */
-    /* transition-timing-function: linear; */
 }
+
+.snake-head {
+    box-shadow: inset 0 0 10px red;
+}
+
+.snake-segment:nth-child(1) {
+    left: calc(var(--row-width) / 2);
+    top: calc(var(--garden-height) / 2);
+}
+
+/* .snake-segment:nth-child(2) {
+    left: calc(2* var(--clod-size));
+}
+
+.snake-segment:nth-child(3) {
+    left: calc(3* var(--clod-size));
+} */
 
 /*
 
@@ -120,4 +132,15 @@ gameover display
 
 .display-block {
     display: block;
+}
+
+/*
+
+
+mouse
+
+*/
+
+.mouse {
+    background-color: grey;
 }
