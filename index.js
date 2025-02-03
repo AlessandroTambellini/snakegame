@@ -1,4 +1,16 @@
+/*
+
+NOTE: There is no snake entity neither in the form of a HTML element
+nor in the form of a JS data-structure.
+snake-segments are appended to the HTML file
+and queried again when there is a change in the body.
+They are not even adjacent in the HTML file. The only important thing 
+is that a new segment is appended after the last one.
+
+*/
+
 let snake = document.querySelectorAll('.snake-segment');
+const mouse = document.querySelector('#mouse');
 const garden = document.querySelector('#garden');
 const a_clod = document.querySelector('.clod');
 const gameover_display = document.querySelector('#gameover-display');
@@ -36,14 +48,16 @@ A better approach would be to...
 
 function start_game(start_key) 
 {
+    let gameover = false;
     let curr_key = start_key;
     let keys_queue = [ start_key ];
     const segment_pos = new Set();
-    let gameover = false;
+    let mouses_eaten = 0;
+    let start_time = new Date().getTime();
 
     const game_tick = 200;
     let prev_timestamp = 0;
-    
+
     const game_loop = (timestamp) => 
     {
         if (timestamp - prev_timestamp > game_tick) 
@@ -60,33 +74,35 @@ function start_game(start_key)
 
                 let snake_head_left = Number(window.getComputedStyle(snake[0]).left.split('px')[0]);
                 let snake_head_top = Number(window.getComputedStyle(snake[0]).top.split('px')[0]);
-        
-                let snake_head_col_idx = snake_head_left / clod_size;
-                let snake_head_row_idx = snake_head_top / clod_size;
-        
-                const clod_of_head = garden.querySelectorAll('.row')[snake_head_row_idx].children[snake_head_col_idx];
-                if (clod_of_head.classList.contains('mouse')) 
+                let mouse_left = Number(window.getComputedStyle(mouse).left.split('px')[0]);
+                let mouse_top = Number(window.getComputedStyle(mouse).top.split('px')[0]);
+
+                if (mouse_left === snake_head_left && 
+                    mouse_top === snake_head_top) 
                 {
                     const new_snake_segment = document.createElement('div');
                     new_snake_segment.classList.add('snake-segment');
                     garden.appendChild(new_snake_segment);
                     new_snake_segment.style.left = window.getComputedStyle(snake[snake.length-1]).left;
                     new_snake_segment.style.top = window.getComputedStyle(snake[snake.length-1]).top;
-        
-                    clod_of_head.classList.remove('mouse');
+            
                     snake = document.querySelectorAll('.snake-segment');
-        
+                    
+                    mouses_eaten += 1;
                     generate_mouse();
                 }
             } // endif (!gameover)
-        } // endif (timestamp - prev_timestamp >= game_tick)
+        } // endif (timestamp - prev_timestamp > game_tick)
 
-        if (gameover) {
-            curr_key = null;
-            keys_queue = [];
-            segment_pos.clear();
-            gameover_display.classList.remove('display-none');
-        } else {
+        if (gameover) 
+        {
+            gameover_display.style.display = 'flex';
+            gameover_display.querySelector('#time-survived').textContent = 
+                `${((new Date().getTime() - start_time)/1000).toFixed(1)}s`;
+            gameover_display.querySelector('#mouses-eaten').textContent = mouses_eaten;
+        } 
+        else 
+        {
             self.requestAnimationFrame(game_loop);
         }
     }
@@ -165,7 +181,8 @@ function start_game(start_key)
         }
     }
 
-    const generate_mouse = () => {
+    const generate_mouse = () => 
+    {
         let mouse_col = Math.floor(Math.random() * cols_on_screen);
         let mouse_row = Math.floor(Math.random() * rows_on_screen);
         /* GOAL: do not generate a mouse on a clod occupied by the snake. */
@@ -173,7 +190,8 @@ function start_game(start_key)
             mouse_col = Math.floor(Math.random() * cols_on_screen);
             mouse_row = Math.floor(Math.random() * rows_on_screen);
         }
-        garden.querySelectorAll('.row')[mouse_row].children[mouse_col].classList.add('mouse');    
+        mouse.style.left = `${mouse_col * clod_size}px`;
+        mouse.style.top = `${mouse_row * clod_size}px`;
     }
 
     if (!gameover) {
@@ -187,22 +205,28 @@ function start_game(start_key)
         
     restart_game_btn.addEventListener('click', () => 
     {
+        /* reset data */
+        curr_key = null;
+        keys_queue = [];
+        segment_pos.clear();                
+        mouses_eaten = 0;
+
+        /* reset UI */
         for (let i = snake.length-1; i > 0; i--) {
             snake[i].remove();
         }
         snake = document.querySelectorAll('.snake-segment');
         snake[0].style.left = `${garden.clientWidth / 2}px`;
         snake[0].style.top = `${garden.clientHeight / 2}px`;
-        
-        document.querySelector('.mouse').classList.remove('mouse');
         generate_mouse();
-    
-        gameover_display.classList.add('display-none');
+        gameover_display.style.display = 'none';
         
+        /* wait for the player to start the game */
         document.addEventListener('keydown', e => {
             const key = e.key.toLowerCase();
             if (direction_keys.includes(key)) {
                 gameover = false;
+                start_time = new Date().getTime();
                 self.requestAnimationFrame(game_loop);
             }
         }, { once: true });
