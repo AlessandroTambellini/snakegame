@@ -89,7 +89,41 @@ Snake
     /* initial position */
     left: calc(var(--row-width) / 2);
     top: calc(var(--garden-height) / 2);
+    display: flex;
+    align-items: end;
+    justify-content: space-around;
+    rotate: 0deg;
 }
+
+#snake-head .eye {
+    --eye-width: calc(var(--clod-size) / 4); 
+    width: var(--eye-width);
+    aspect-ratio: 2/3;
+    background-color: white;
+    box-shadow: 0 0 1px black;
+    border-radius: calc(var(--eye-width)/2);
+    margin-bottom: 10px;
+    display: flex;
+    align-items: end;
+    justify-content: center;
+}
+
+#snake-head .eye:nth-child(1) {
+    rotate: -15deg;
+}
+
+#snake-head .eye:nth-child(2) {
+    rotate: 15deg;
+}
+
+#snake-head .pupil {
+    width: calc(var(--eye-width) / 4 * 3);
+    aspect-ratio: 1;
+    background-color: black;
+    border-radius: 100%;
+    margin: 1px;
+}
+
 
 .snake-segment {
     width: var(--clod-size);
@@ -108,11 +142,63 @@ Mouse
 #mouse {
     background-color: rgb(173, 173, 173);
     position: absolute;
-    box-shadow: 0 0 5px rgb(61, 61, 61);
+    box-shadow: 0 0 1px black;
     width: var(--clod-size);
     aspect-ratio: 1/1;
     left: calc(var(--clod-size) * 6);
     top: calc(var(--clod-size) * 4);
+    display: flex;
+    align-items: start;
+    justify-content: center;
+    flex-wrap: wrap;
+    /* overflow-y: hidden; */
+    border-top-left-radius: var(--clod-size) calc(var(--clod-size) * 2);
+    border-top-right-radius: var(--clod-size) calc(var(--clod-size) * 2);
+    clip-path: polygon(0% 0%, 100% 0%, 100% var(--clod-size), 0% var(--clod-size));
+}
+
+#mouse .ear {
+    width: calc(var(--clod-size)/2);
+    aspect-ratio: 1;
+    background-color: rgb(173, 173, 173);
+    border-radius: 100%;
+    box-shadow: inset 0 0 2px black;
+}
+
+#mouse .eye {
+    background-color: white;
+    box-shadow: 0 0 1px black;
+    border-radius: 100%;
+    width: calc(var(--clod-size)/4);
+    aspect-ratio: 1;
+    display: flex;
+    align-items: end;
+    justify-content: end;
+}
+
+#mouse .eye:nth-child(even) {
+    margin-left: 4px;
+    justify-content: start;
+}
+
+#mouse .eye:nth-child() {
+    margin-right: 4px;
+}
+
+#mouse .pupil {
+    background-color: black;
+    border-radius: 100%;
+    width: calc(var(--clod-size)/5);
+    aspect-ratio: 1;
+}
+
+#mouse .paw {
+    width: calc(var(--clod-size)/2);
+    aspect-ratio: 1;
+    background-color: rgb(154, 154, 154);
+    border-radius: 100%;
+    box-shadow: inset 0 0 1px black;
+    /* margin-top: calc(var(--clod-size) / 4); */
 }
 
 /*
@@ -140,7 +226,7 @@ gameover display
 
 #gameover-display h2 {
     font-size: 5rem;
-    color: rgb(153, 43, 43);
+    color: rgb(198, 43, 43);
     text-shadow: 0 0 3px rgb(228, 228, 228);
 }
 
