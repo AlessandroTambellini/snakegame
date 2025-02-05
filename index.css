@@ -33,6 +33,7 @@ body {
     display: flex;
     align-items: center;
     justify-content: center;
+    background-color: rgb(66, 81, 66);
 }
 
 #garden {
@@ -42,6 +43,7 @@ body {
     overflow-y: hidden;
     position: relative; /* useful to control the position
     of the snake and of the mouse. */
+    box-shadow: 0 0 4px rgb(188, 250, 158);
 }
 
 .row {
@@ -215,7 +217,7 @@ gameover display
     justify-content: center;
     gap: 1rem;
     flex-direction: column;
-    background-color: rgba(0, 0, 0, 0.233);
+    background-color: rgba(0, 0, 0, 0.5);
     width: 100vw;
     height: 100vh;
 }
@@ -227,7 +229,8 @@ gameover display
 #gameover-display h2 {
     font-size: 5rem;
     color: rgb(198, 43, 43);
-    text-shadow: 0 0 3px rgb(228, 228, 228);
+    text-shadow: -2px -2px white, -2px 2px white, 2px 2px white, 2px -2px white,
+        -1px 0 white, 0 1px white, 1px 0 white, 0 -1px white;
 }
 
 #gameover-display button {

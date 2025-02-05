@@ -35,45 +35,44 @@ function check_start_key(e) {
 }
 
 document.addEventListener('keydown', check_start_key);
+document.addEventListener('touchmove', e => {
+    console.log(e.changedTouches);
+})
 
-function start_game(start_key) 
+function start_game(key) 
 {
-    let curr_key = start_key;
-    const keys_queue = [ start_key ];
+    let curr_key = key;
     const segment_pos = new Set();
+    const keys_queue = [ key ];
     let mouses_eaten = 0;
-    const game_tick = 200;
     const start_time = new Date().getTime();
     let prev_timestamp = 0;
 
-    const queue_direction_key = e => {
-        const key = e.key.toLowerCase();
-        if (!['w', 'd', 's', 'a',
-            'arrowup', 'arrowright', 'arrowdown', 'arrowleft'
-        ].includes(key)) {
+    const change_snake_direction = e => 
+    {
+        if (keys_queue.length === 2) {
             return;
         }
+        const key = e.key.toLowerCase();
         const last_key = keys_queue.length > 0 ? keys_queue[keys_queue.length - 1] : curr_key;
-        if (key !== last_key) {
+        if (
             // The snake cannot move in opposite directions
-            if (
-                (key === 'w' || key === 'arrowup') && last_key !== 's' && last_key !== 'arrowdown' ||
-                (key === 'd' || key === 'arrowright') && last_key !== 'a' && last_key !== 'arrowleft' ||
-                (key === 's' || key === 'arrowdown') && last_key !== 'w' && last_key !== 'arrowup' ||
-                (key === 'a' || key === 'arrowleft') && last_key !== 'd' && last_key !== 'arrowright'
-            ) {
-                keys_queue.push(key);
-            }
+            (key === 'w' || key === 'arrowup') && last_key !== 's' && last_key !== 'arrowdown' ||
+            (key === 'd' || key === 'arrowright') && last_key !== 'a' && last_key !== 'arrowleft' ||
+            (key === 's' || key === 'arrowdown') && last_key !== 'w' && last_key !== 'arrowup' ||
+            (key === 'a' || key === 'arrowleft') && last_key !== 'd' && last_key !== 'arrowright'
+        ) {
+            keys_queue.push(key);
         }
     }
 
-    document.addEventListener('keydown', queue_direction_key);
-
-    const game_loop = (timestamp) => 
+    document.addEventListener('keydown', change_snake_direction);
+    
+    const game_loop = async (timestamp) => 
     {
-        if (timestamp - prev_timestamp > game_tick) {
+        if (timestamp - prev_timestamp > 200) 
+        {    
             prev_timestamp = timestamp;
-
             const next_key = keys_queue.shift();
             if (next_key) {
                 curr_key = next_key;
@@ -81,20 +80,26 @@ function start_game(start_key)
             rotate_snake_head(curr_key);
             if (move_snake(curr_key, segment_pos)) {
                 mouses_eaten += eat_mouse(segment_pos);
-            }
-            else { // gameover
-                document.removeEventListener('keydown', queue_direction_key);
+            } 
+            else {
+                document.removeEventListener('keydown', change_snake_direction);
+                gameover = true;
+
+                /* Wait an instant to let the head rotate and see it crashed onto something,
+                before showing the gameover display. */
+                await new Promise(resolve => setTimeout(resolve, 200));
                 gameover_display.style.display = 'flex';
                 gameover_display.querySelector('#time-survived').textContent = 
                     `${((new Date().getTime() - start_time)/1000).toFixed(1)}s`;
                 gameover_display.querySelector('#mouses-eaten').textContent = mouses_eaten;
+                
                 return;
             }
         }
         
         self.requestAnimationFrame(game_loop);
     }
-
+    
     game_loop();
 }
 
