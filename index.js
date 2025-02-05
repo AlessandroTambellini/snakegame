@@ -28,7 +28,7 @@ function check_start_key(e) {
     /* Before the game starts,
     the head of the snake points towards the bottom 
     so, it cannot immediately move upwords ('w' key) */
-    if (['d', 's', 'a'].includes(key)) {
+    if (['d', 's', 'a', 'arrowright', 'arrowdown', 'arrowleft'].includes(key)) {
         document.removeEventListener('keydown', check_start_key);
         start_game(key);
     }
@@ -48,16 +48,19 @@ function start_game(start_key)
 
     const queue_direction_key = e => {
         const key = e.key.toLowerCase();
-        if (!['w', 'd', 's', 'a'].includes(key)) {
+        if (!['w', 'd', 's', 'a',
+            'arrowup', 'arrowright', 'arrowdown', 'arrowleft'
+        ].includes(key)) {
             return;
         }
         const last_key = keys_queue.length > 0 ? keys_queue[keys_queue.length - 1] : curr_key;
         if (key !== last_key) {
             // The snake cannot move in opposite directions
-            if (key === 'd' && last_key !== 'a' ||
-                key === 'a' && last_key !== 'd' ||
-                key === 'w' && last_key !== 's' ||
-                key === 's' && last_key !== 'w'
+            if (
+                (key === 'w' || key === 'arrowup') && last_key !== 's' && last_key !== 'arrowdown' ||
+                (key === 'd' || key === 'arrowright') && last_key !== 'a' && last_key !== 'arrowleft' ||
+                (key === 's' || key === 'arrowdown') && last_key !== 'w' && last_key !== 'arrowup' ||
+                (key === 'a' || key === 'arrowleft') && last_key !== 'd' && last_key !== 'arrowright'
             ) {
                 keys_queue.push(key);
             }
@@ -100,14 +103,14 @@ function move_snake(key, segment_pos)
     let snake_head_left = Number(window.getComputedStyle(snake[0]).left.split('px')[0]);
     let snake_head_top = Number(window.getComputedStyle(snake[0]).top.split('px')[0]);
     
-    if (key === 'd') {
-        snake_head_left += clod_size;
-    } else if (key === 'a') {
-        snake_head_left -= clod_size;
-    } else if (key === 's') {
-        snake_head_top += clod_size;
-    } else if (key === 'w') {
+    if (key === 'w' || key === 'arrowup') {
         snake_head_top -= clod_size;
+    } else if (key === 'd' || key === 'arrowright') {
+        snake_head_left += clod_size;
+    } else if (key === 's' || key === 'arrowdown') {
+        snake_head_top += clod_size;
+    } else if (key === 'a' || key === 'arrowleft') {
+        snake_head_left -= clod_size;
     }
     
     /* Reason to loose #1: crash on the hedge. */
@@ -153,13 +156,13 @@ function move_snake(key, segment_pos)
 }
 
 function rotate_snake_head(key) {
-    if (key === 'w') {
+    if (key === 'w' || key === 'arrowup') {
         snake[0].style.rotate = '180deg';
-    } else if (key === 'd') {
+    } else if (key === 'd' || key === 'arrowright') {
         snake[0].style.rotate = '-90deg';
-    } else if (key === 's') {
+    } else if (key === 's' || key === 'arrowdown') {
         snake[0].style.rotate = '0deg';
-    } else if (key === 'a') {
+    } else if (key === 'a' || key === 'arrowleft') {
         snake[0].style.rotate = '90deg';
     }
 }
