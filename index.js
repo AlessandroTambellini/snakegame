@@ -1,11 +1,16 @@
 /*
 
-NOTE: There is no snake entity neither in the form of a HTML element
+NOTE 1: There is no snake entity neither in the form of a HTML element
 nor in the form of a JS data-structure.
 snake-segments are appended to the HTML file
 and queried again when there is a change in the body.
-They are not even adjacent in the HTML file. 
-The only important thing is that a new segment is appended after the last one.
+I know it would be more efficient to have a snake entity instead of quering its
+body parts every time it grows but, I just wanted to try this way.
+
+NOTE 2: touch and keyboard inputs are evaluated by the same functions.
+It means you can play with both the input sources.
+So, you may move up with the key 'w' and then move right 
+by swapping to the right on the touchscreen. 
 
 */
 
@@ -115,8 +120,9 @@ function start_game(dir)
     let mouses_eaten = 0;
     const start_time = new Date().getTime();
     let prev_timestamp = 0;
-
     let prev_touch = null;
+    let victory = false;
+    let snake_crashed = false;
 
     const change_snake_direction = e => 
     {
@@ -157,7 +163,7 @@ function start_game(dir)
     document.addEventListener('keydown', change_snake_direction);
     document.addEventListener('touchmove', change_snake_direction, { passive: false });
     
-    const game_loop = async (timestamp) => 
+    const game_loop = (timestamp) => 
     {
         if (timestamp - prev_timestamp > 200) 
         {    
@@ -165,24 +171,37 @@ function start_game(dir)
             const next_dir = dir_queue.shift();
             if (next_dir) {
                 curr_dir = next_dir;
+                rotate_snake_head(curr_dir);
             }
-            rotate_snake_head(curr_dir);
-            if (move_snake(curr_dir, segment_pos)) {
-                mouses_eaten += eat_mouse(segment_pos);
-            } 
-            else {
+
+            let mouse_eaten = eat_mouse();
+            if (mouse_eaten) {
+                mouses_eaten += 1;
+                if (snake.length === rows_on_screen * cols_on_screen) {
+                    victory = true;
+                } else {
+                    generate_mouse(segment_pos);
+                }
+            }
+
+            if (!victory) {
+                snake_crashed = move_snake(curr_dir, segment_pos);
+            }
+
+            if (victory || snake_crashed) {
                 document.removeEventListener('keydown', change_snake_direction);
-                document.removeEventListener('touchmove', change_snake_direction);
-                gameover = true;
+                document.removeEventListener('touchmove', change_snake_direction);       
                 
-                /* Wait an instant to let the head rotate and see it crashed onto something,
-                before showing the gameover display. */
-                await new Promise(resolve => setTimeout(resolve, 100));
+                if (victory) {
+                    // Send me a msg if it ever happens :)
+                    gameover_display.querySelector('h2').textContent = 'WIN!';
+                } else {
+                    gameover_display.querySelector('h2').textContent = 'GAME OVER';
+                }
                 gameover_display.style.display = 'flex';
                 gameover_display.querySelector('#time-survived').textContent = 
                     `${((new Date().getTime() - start_time)/1000).toFixed(1)}s`;
                 gameover_display.querySelector('#mouses-eaten').textContent = mouses_eaten;
-                
                 return;
             }
         }
@@ -214,12 +233,12 @@ function move_snake(dir, segment_pos)
         snake_head_top < 0 ||
         snake_head_top >= garden.clientHeight
     ) {
-        return false;
+        return true;
     }
     
     /* Reason to loose #2: the head crashes on the body. */
     if (segment_pos.has(snake_head_left + ',' + snake_head_top)) {
-        return false;
+        return true;
     }
 
     segment_pos.clear(); // reset the set for the next positions
@@ -247,7 +266,7 @@ function move_snake(dir, segment_pos)
     snake[0].style.left = `${snake_head_left}px`;
     snake[0].style.top = `${snake_head_top}px`;
 
-    return true;
+    return false;
 }
 
 function rotate_snake_head(dir) {
@@ -262,7 +281,7 @@ function rotate_snake_head(dir) {
     }
 }
 
-function eat_mouse(segment_pos) 
+function eat_mouse() 
 {
     let snake_head_left = Number(window.getComputedStyle(snake[0]).left.split('px')[0]);
     let snake_head_top = Number(window.getComputedStyle(snake[0]).top.split('px')[0]);
@@ -278,13 +297,9 @@ function eat_mouse(segment_pos)
         new_snake_segment.style.left = window.getComputedStyle(snake[snake.length-1]).left;
         new_snake_segment.style.top = window.getComputedStyle(snake[snake.length-1]).top;
         snake = document.querySelectorAll('.snake-segment');
-        generate_mouse(segment_pos);
-
-        return 1;
+        return true;
     } 
-    else {
-        return 0;
-    }
+    return false;
 }
 
 function generate_mouse(segment_pos) 
