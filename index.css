@@ -228,6 +228,7 @@ gameover display
 }
 
 #gameover-display h2 {
+    text-align: center;
     font-size: 5rem;
     color: rgb(198, 43, 43);
     text-shadow: -2px -2px white, -2px 2px white, 2px 2px white, 2px -2px white,

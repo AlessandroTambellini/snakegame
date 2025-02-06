@@ -23,71 +23,161 @@ window.addEventListener('resize', () => {
     cols_on_screen = garden.clientWidth / clod_size;
 });
 
-function check_start_key(e) {
-    const key = e.key.toLowerCase();
+function get_key_dir(key) {
+    let dir = null;
+    switch (key) {
+        case 'w':
+        case 'arrowup':
+            dir = 'u';
+            break;
+        case 'd':
+        case 'arrowright':
+            dir = 'r';
+            break;
+        case 's':
+        case 'arrowdown':
+            dir = 'd';
+            break;
+        case 'a':
+        case 'arrowleft':
+            dir = 'l';
+            break;
+    }
+
+    return dir;
+}
+
+function get_touch_dir(prev_touch, curr_touch) {
+    let dir = null;
+    let top = left = false;
+    if (prev_touch.clientX - curr_touch.clientX > 0) {
+        left = true;
+    }
+    if (prev_touch.clientY - curr_touch.clientY > 0) {
+        top = true;
+    }
+
+    /* It's rare a finger moves perfectly horizontally or vertically.
+    Probably it moves diagonally. */
+    let delta_x = Math.abs(prev_touch.clientX - curr_touch.clientX);
+    let delta_y = Math.abs(prev_touch.clientY - curr_touch.clientY);
+    if (delta_x > delta_y) {
+        if (left) {
+            dir = 'l';
+        } else {
+            dir = 'r';
+        }
+    } else {
+        if (top) {
+            dir = 'u';
+        } else {
+            dir = 'd';
+        }
+    }
+
+    return dir;
+}
+
+let prev_touch = null;
+function get_input(e) {
+    let dir = null;
+    if (e.changedTouches) {
+        e.preventDefault(); // I guess there could be some scrolling behaviour. Not sure. Need to test it
+        let curr_touch = e.changedTouches[0];
+        if (!prev_touch) {
+            prev_touch = curr_touch;
+            return;
+        }
+        dir = get_touch_dir(prev_touch, curr_touch);
+    } else {
+        dir = get_key_dir(e.key.toLowerCase());
+    }
     /* Before the game starts,
     the head of the snake points towards the bottom 
-    so, it cannot immediately move upwords ('w' key) */
-    if (['d', 's', 'a', 'arrowright', 'arrowdown', 'arrowleft'].includes(key)) {
-        document.removeEventListener('keydown', check_start_key);
-        start_game(key);
+    so, it cannot immediately move up. */
+    if (dir && dir !== 'u') {
+        document.removeEventListener('keydown', get_input);
+        document.removeEventListener('touchmove', get_input);
+        start_game(dir);
     }
 }
 
-document.addEventListener('keydown', check_start_key);
-document.addEventListener('touchmove', e => {
-    console.log(e.changedTouches);
-})
+document.addEventListener('keydown', get_input);
+document.addEventListener('touchmove', get_input, { passive: false
+    /* Info at: https://developer.mozilla.org/en-US/docs/Web/API/EventTarget/addEventListener#passive */
+});
 
-function start_game(key) 
+function start_game(dir) 
 {
-    let curr_key = key;
+    let curr_dir = dir;
+    const dir_queue = [ dir ];
     const segment_pos = new Set();
-    const keys_queue = [ key ];
     let mouses_eaten = 0;
     const start_time = new Date().getTime();
     let prev_timestamp = 0;
 
+    let prev_touch = null;
+
     const change_snake_direction = e => 
     {
-        if (keys_queue.length === 2) {
+        e.preventDefault();
+        if (dir_queue.length === 2) {
             return;
         }
-        const key = e.key.toLowerCase();
-        const last_key = keys_queue.length > 0 ? keys_queue[keys_queue.length - 1] : curr_key;
+
+        let dir = null;
+        if (e.changedTouches) 
+        {
+            let curr_touch = e.changedTouches[0];
+            if (!prev_touch) {
+                prev_touch = curr_touch;
+                return;
+            }
+
+            dir = get_touch_dir(prev_touch, curr_touch);
+
+            prev_touch = curr_touch;
+        }
+        else {
+            dir = get_key_dir(e.key.toLowerCase());
+        }
+        
+        const last_dir = dir_queue.length > 0 ? dir_queue[dir_queue.length - 1] : curr_dir;
         if (
             // The snake cannot move in opposite directions
-            (key === 'w' || key === 'arrowup') && last_key !== 's' && last_key !== 'arrowdown' ||
-            (key === 'd' || key === 'arrowright') && last_key !== 'a' && last_key !== 'arrowleft' ||
-            (key === 's' || key === 'arrowdown') && last_key !== 'w' && last_key !== 'arrowup' ||
-            (key === 'a' || key === 'arrowleft') && last_key !== 'd' && last_key !== 'arrowright'
+            dir === 'u' && last_dir !== 'd' ||
+            dir === 'r' && last_dir !== 'l' ||
+            dir === 'd' && last_dir !== 'u' ||
+            dir === 'l' && last_dir !== 'r'
         ) {
-            keys_queue.push(key);
+            dir_queue.push(dir);
         }
     }
 
     document.addEventListener('keydown', change_snake_direction);
+    document.addEventListener('touchmove', change_snake_direction, { passive: false });
     
     const game_loop = async (timestamp) => 
     {
         if (timestamp - prev_timestamp > 200) 
         {    
             prev_timestamp = timestamp;
-            const next_key = keys_queue.shift();
-            if (next_key) {
-                curr_key = next_key;
+            const next_dir = dir_queue.shift();
+            if (next_dir) {
+                curr_dir = next_dir;
             }
-            rotate_snake_head(curr_key);
-            if (move_snake(curr_key, segment_pos)) {
+            rotate_snake_head(curr_dir);
+            if (move_snake(curr_dir, segment_pos)) {
                 mouses_eaten += eat_mouse(segment_pos);
             } 
             else {
                 document.removeEventListener('keydown', change_snake_direction);
+                document.removeEventListener('touchmove', change_snake_direction);
                 gameover = true;
-
+                
                 /* Wait an instant to let the head rotate and see it crashed onto something,
                 before showing the gameover display. */
-                await new Promise(resolve => setTimeout(resolve, 200));
+                await new Promise(resolve => setTimeout(resolve, 100));
                 gameover_display.style.display = 'flex';
                 gameover_display.querySelector('#time-survived').textContent = 
                     `${((new Date().getTime() - start_time)/1000).toFixed(1)}s`;
@@ -103,18 +193,18 @@ function start_game(key)
     game_loop();
 }
 
-function move_snake(key, segment_pos) 
+function move_snake(dir, segment_pos) 
 {
     let snake_head_left = Number(window.getComputedStyle(snake[0]).left.split('px')[0]);
     let snake_head_top = Number(window.getComputedStyle(snake[0]).top.split('px')[0]);
     
-    if (key === 'w' || key === 'arrowup') {
+    if (dir === 'u') {
         snake_head_top -= clod_size;
-    } else if (key === 'd' || key === 'arrowright') {
+    } else if (dir === 'r') {
         snake_head_left += clod_size;
-    } else if (key === 's' || key === 'arrowdown') {
+    } else if (dir === 'd') {
         snake_head_top += clod_size;
-    } else if (key === 'a' || key === 'arrowleft') {
+    } else if (dir === 'l') {
         snake_head_left -= clod_size;
     }
     
@@ -160,14 +250,14 @@ function move_snake(key, segment_pos)
     return true;
 }
 
-function rotate_snake_head(key) {
-    if (key === 'w' || key === 'arrowup') {
+function rotate_snake_head(dir) {
+    if (dir === 'u') {
         snake[0].style.rotate = '180deg';
-    } else if (key === 'd' || key === 'arrowright') {
+    } else if (dir === 'r') {
         snake[0].style.rotate = '-90deg';
-    } else if (key === 's' || key === 'arrowdown') {
+    } else if (dir === 'd') {
         snake[0].style.rotate = '0deg';
-    } else if (key === 'a' || key === 'arrowleft') {
+    } else if (dir === 'l') {
         snake[0].style.rotate = '90deg';
     }
 }
@@ -217,12 +307,10 @@ document.querySelector('#restart-game-btn').addEventListener('click', () =>
         snake[i].remove();
     }
     snake = document.querySelectorAll('.snake-segment');
-    snake[0].style.left = `${garden.clientWidth / 2}px`;
-    snake[0].style.top = `${garden.clientHeight / 2}px`;
-    snake[0].style.rotate = '0deg';
-    mouse.style.left = null;
-    mouse.style.top = null;
+    snake[0].style = null;
+    mouse.style = null;
     gameover_display.style.display = 'none';
 
-    document.addEventListener('keydown', check_start_key);
+    document.addEventListener('keydown', get_input);
+    document.addEventListener('touchmove', get_input, { passive: false });
 });
