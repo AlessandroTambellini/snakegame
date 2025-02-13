@@ -142,7 +142,7 @@ function start_game(dir)
 
             dir = get_touch_dir(prev_touch, curr_touch);
 
-            prev_touch = curr_touch;
+            prev_touch = null;
         }
         else {
             dir = get_key_dir(e.key.toLowerCase());
