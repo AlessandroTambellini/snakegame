@@ -235,14 +235,25 @@ gameover display
     font-size: 2rem;
     padding: 1rem;
     cursor: pointer;
-    box-shadow: 0 0 3px rgb(186, 186, 186);
+    box-shadow: 0 0 3px rgb(227, 227, 227);
+    background-color: rgb(198, 43, 43);
+    color: white;
+    border-radius: 1rem;
+}
+
+#gameover-display > div {
+    padding: 1rem;
+    border-radius: 1rem;
+    background-color: aliceblue;
 }
 
 #gameover-display p {
-    font-size: 2rem;
-    text-shadow: 0 0 4px white;
+    font-size: 2.5rem;
+    margin: 0;
+    font-weight: bold;
 }
 
 #gameover-display p > span {
     font-weight: bold;
+    color: black;
 }
