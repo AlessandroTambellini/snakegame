@@ -4,6 +4,7 @@ NOTE 1: There is no snake entity neither in the form of a HTML element
 nor in the form of a JS data-structure.
 snake-segments are appended to the HTML file
 and queried again when there is a change in the body.
+I know it might not be efficient, but I wanted to try this approach.
 
 NOTE 2: Touch and keyboard inputs are evaluated by the same functions.
 It means you can play with both the input sources.
