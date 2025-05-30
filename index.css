@@ -73,12 +73,12 @@ body {
     background-color: rgb(143, 212, 121);
 }
 
-@media (max-aspect-ratio: 1) { /* (width / height) <= 1 --> vertical */
+@media (max-aspect-ratio: 1/1) { /* (width / height) <= 1 --> vertical */
     #garden {
         border: min(var(--max-clod-size), calc((100vw - var(--row-width)) / 2)) solid rgb(0, 100, 0);
     }
 }
-@media (min-aspect-ratio: 1) { /* horizontal */
+@media (min-aspect-ratio: 1/1) { /* horizontal */
     #garden {
         border: min(var(--max-clod-size), calc((100vh - var(--garden-height)) / 2)) solid rgb(0, 100, 0);
     }

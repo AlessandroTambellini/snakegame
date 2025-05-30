@@ -4,10 +4,8 @@ NOTE 1: There is no snake entity neither in the form of a HTML element
 nor in the form of a JS data-structure.
 snake-segments are appended to the HTML file
 and queried again when there is a change in the body.
-I know it would be more efficient to have a snake entity instead of quering its
-body parts every time it grows but, I just wanted to try this way.
 
-NOTE 2: touch and keyboard inputs are evaluated by the same functions.
+NOTE 2: Touch and keyboard inputs are evaluated by the same functions.
 It means you can play with both the input sources.
 So, you may move up with the key 'w' and then move right 
 by swapping to the right on the touchscreen. 
@@ -98,8 +96,8 @@ function get_input(e) {
         dir = get_key_dir(e.key.toLowerCase());
     }
     /* Before the game starts,
-    the head of the snake points towards the bottom 
-    so, it cannot immediately move up. */
+    the head of the snake points towards the bottom;
+    Therefore, it cannot immediately move up. */
     if (dir && dir !== 'u') {
         document.removeEventListener('keydown', get_input);
         document.removeEventListener('touchmove', get_input);
@@ -306,11 +304,13 @@ function generate_mouse(segment_pos)
 {
     let mouse_col = Math.floor(Math.random() * cols_on_screen);
     let mouse_row = Math.floor(Math.random() * rows_on_screen);
-    /* GOAL: do not generate a mouse on a clod occupied by the snake. */
+    
+    /* Don't generate a mouse on a clod occupied by the snake. */
     while (segment_pos.has(mouse_col * clod_size + ',' + mouse_row * clod_size)) {
         mouse_col = Math.floor(Math.random() * cols_on_screen);
         mouse_row = Math.floor(Math.random() * rows_on_screen);
     }
+    
     mouse.style.left = `${mouse_col * clod_size}px`;
     mouse.style.top = `${mouse_row * clod_size}px`;
 }
